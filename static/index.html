@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audio Search</title>
+</head>
+<body>
+    <h1>Search Nearest Audio Segments</h1>
+    <form id="searchForm">
+        <label for="query">Text Query:</label>
+        <input type="text" id="query" name="query" required>
+        <button type="submit">Search</button>
+    </form>
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const query = document.getElementById('query').value;
+            const response = await fetch('/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ query })
+            });
+            const data = await response.json();
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+            if (data.results) {
+                data.results.forEach(result => {
+                    const resultDiv = document.createElement('div');
+                    resultDiv.innerHTML = `<p>File: ${result.file}, Timestamp: ${result.timestamp}, Similarity: ${result.similarity}</p>`;
+                    
+                    // Add audio player
+                    const audioPlayer = document.createElement('audio');
+                    audioPlayer.controls = true;
+                    audioPlayer.src = `/audio/${result.file}`;
+                    resultDiv.appendChild(audioPlayer);
+                    
+                    resultsDiv.appendChild(resultDiv);
+                });
+            } else {
+                resultsDiv.innerHTML = '<p>No results found</p>';
+            }
+        });
+    </script>
+</body>
+</html>
